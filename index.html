@@ -3,55 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Officer Lookup</title>
+  <title>Public Service Officer Lookup</title>
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      color: #1b1b1b;
+    }
+
+    header {
+      background: #0b3d91;
       color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
     }
 
     .container {
       max-width: 900px;
-      margin: 50px auto;
+      margin: 30px auto;
       padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
+    .notice {
+      background: #e8f0fe;
+      border-left: 5px solid #0b3d91;
+      padding: 12px;
+      margin-bottom: 20px;
+      font-size: 14px;
     }
 
     .search-box {
       display: flex;
       gap: 10px;
       margin-bottom: 20px;
+      flex-wrap: wrap;
     }
 
     input, select {
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
     }
 
     input {
       flex: 1;
+      min-width: 200px;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
       padding: 15px;
-      margin-bottom: 15px;
-      backdrop-filter: blur(10px);
+      margin-bottom: 12px;
       cursor: pointer;
-      transition: 0.3s;
+      transition: 0.2s;
     }
 
     .card:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: #f0f4ff;
+    }
+
+    .card strong {
+      font-size: 16px;
     }
 
     .details {
@@ -59,102 +80,129 @@
       margin-top: 10px;
       font-size: 14px;
       line-height: 1.6;
+      border-top: 1px solid #eee;
+      padding-top: 10px;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: #555;
+      margin: 20px 0;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Police Officer Lookup</h1>
 
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Search officer name...">
-      <select id="stateFilter">
-        <option value="">All States</option>
-        <option value="NSW">NSW</option>
-        <option value="VIC">VIC</option>
-        <option value="QLD">QLD</option>
-        <option value="SA">SA</option>
-        <option value="WA">WA</option>
-        <option value="TAS">TAS</option>
-        <option value="NT">NT</option>
-        <option value="ACT">ACT</option>
-      </select>
-    </div>
+<header>
+  Public Service Officer Lookup Portal
+</header>
 
-    <div id="results"></div>
+<div class="container">
+
+  <div class="notice">
+    This system is for informational purposes only. Data displayed may be limited to publicly available records.
   </div>
 
-  <script>
-    const officers = [
-      {
-        name: "John Smith",
-        state: "SA",
-        rank: "Sergeant",
-        station: "Adelaide Central",
-        id: "SA1234"
-      },
-      {
-        name: "Emily Johnson",
-        state: "NSW",
-        rank: "Constable",
-        station: "Sydney CBD",
-        id: "NSW5678"
-      },
-      {
-        name: "Michael Brown",
-        state: "VIC",
-        rank: "Senior Constable",
-        station: "Melbourne West",
-        id: "VIC9101"
-      }
-    ];
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search officer name...">
+    <select id="stateFilter">
+      <option value="">All States</option>
+      <option value="NSW">New South Wales</option>
+      <option value="VIC">Victoria</option>
+      <option value="QLD">Queensland</option>
+      <option value="SA">South Australia</option>
+      <option value="WA">Western Australia</option>
+      <option value="TAS">Tasmania</option>
+      <option value="NT">Northern Territory</option>
+      <option value="ACT">Australian Capital Territory</option>
+    </select>
+  </div>
 
-    const searchInput = document.getElementById("searchInput");
-    const stateFilter = document.getElementById("stateFilter");
-    const resultsDiv = document.getElementById("results");
+  <div id="results"></div>
+</div>
 
-    function displayOfficers(list) {
-      resultsDiv.innerHTML = "";
+<footer>
+  © 2026 Public Service Information System
+</footer>
 
-      list.forEach((officer, index) => {
-        const card = document.createElement("div");
-        card.className = "card";
+<script>
+  const officers = [
+    {
+      name: "John Smith",
+      state: "SA",
+      rank: "Sergeant",
+      station: "Adelaide Central",
+      id: "SA1234"
+    },
+    {
+      name: "Emily Johnson",
+      state: "NSW",
+      rank: "Constable",
+      station: "Sydney CBD",
+      id: "NSW5678"
+    },
+    {
+      name: "Michael Brown",
+      state: "VIC",
+      rank: "Senior Constable",
+      station: "Melbourne West",
+      id: "VIC9101"
+    }
+  ];
 
-        card.innerHTML = `
-          <strong>${officer.name}</strong> (${officer.state})
-          <div class="details" id="details-${index}">
-            Rank: ${officer.rank}<br>
-            Station: ${officer.station}<br>
-            ID: ${officer.id}
-          </div>
-        `;
+  const searchInput = document.getElementById("searchInput");
+  const stateFilter = document.getElementById("stateFilter");
+  const resultsDiv = document.getElementById("results");
 
-        card.addEventListener("click", () => {
-          const details = document.getElementById(`details-${index}`);
-          details.style.display = details.style.display === "block" ? "none" : "block";
-        });
+  function displayOfficers(list) {
+    resultsDiv.innerHTML = "";
 
-        resultsDiv.appendChild(card);
-      });
+    if (list.length === 0) {
+      resultsDiv.innerHTML = "<p>No results found.</p>";
+      return;
     }
 
-    function filterOfficers() {
-      const search = searchInput.value.toLowerCase();
-      const state = stateFilter.value;
+    list.forEach((officer, index) => {
+      const card = document.createElement("div");
+      card.className = "card";
 
-      const filtered = officers.filter(o => {
-        const matchesName = o.name.toLowerCase().includes(search);
-        const matchesState = state === "" || o.state === state;
-        return matchesName && matchesState;
+      card.innerHTML = `
+        <strong>${officer.name}</strong> (${officer.state})
+        <div class="details" id="details-${index}">
+          <strong>Rank:</strong> ${officer.rank}<br>
+          <strong>Station:</strong> ${officer.station}<br>
+          <strong>Officer ID:</strong> ${officer.id}
+        </div>
+      `;
+
+      card.addEventListener("click", () => {
+        const details = document.getElementById(`details-${index}`);
+        details.style.display = details.style.display === "block" ? "none" : "block";
       });
 
-      displayOfficers(filtered);
-    }
+      resultsDiv.appendChild(card);
+    });
+  }
 
-    searchInput.addEventListener("input", filterOfficers);
-    stateFilter.addEventListener("change", filterOfficers);
+  function filterOfficers() {
+    const search = searchInput.value.toLowerCase();
+    const state = stateFilter.value;
 
-    displayOfficers(officers);
-  </script>
+    const filtered = officers.filter(o => {
+      const matchesName = o.name.toLowerCase().includes(search);
+      const matchesState = state === "" || o.state === state;
+      return matchesName && matchesState;
+    });
+
+    displayOfficers(filtered);
+  }
+
+  searchInput.addEventListener("input", filterOfficers);
+  stateFilter.addEventListener("change", filterOfficers);
+
+  displayOfficers(officers);
+</script>
+
 </body>
 </html>
