@@ -4,101 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Public Service Officer Lookup</title>
+
+  <!-- Google Sign-In -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
   <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f7fa;
-      color: #1b1b1b;
-    }
-
-    header {
-      background: #0b3d91;
-      color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: 600;
-    }
-
-    .container {
-      max-width: 950px;
-      margin: 30px auto;
-      padding: 20px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    .notice {
-      background: #e8f0fe;
-      border-left: 5px solid #0b3d91;
-      padding: 12px;
-      margin-bottom: 20px;
-      font-size: 14px;
-    }
-
-    .search-box {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    input, select {
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 15px;
-    }
-
-    input { flex: 1; }
-
-    .card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 12px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .card:hover { background: #f0f4ff; }
-
-    .details {
-      display: none;
-      margin-top: 10px;
-      font-size: 14px;
-      line-height: 1.6;
-      border-top: 1px solid #eee;
-      padding-top: 10px;
-    }
-
-    .section-title {
-      margin-top: 10px;
-      font-weight: bold;
-      color: #0b3d91;
-    }
-
-    .button {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 8px 12px;
-      background: #0b3d91;
-      color: white;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 13px;
-    }
-
-    .button:hover { background: #092f6b; }
-
-    footer {
-      text-align: center;
-      font-size: 12px;
-      color: #555;
-      margin: 20px 0;
-    }
+    body { margin:0; font-family:"Segoe UI",sans-serif; background:#f5f7fa; }
+    header { background:#0b3d91; color:white; padding:20px; text-align:center; font-size:22px; }
+    .container { max-width:950px; margin:30px auto; padding:20px; background:white; border-radius:10px; }
+    .notice { background:#e8f0fe; border-left:5px solid #0b3d91; padding:12px; margin-bottom:20px; }
+    .search-box { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+    input, select { padding:10px; border-radius:6px; border:1px solid #ccc; }
+    input { flex:1; }
+    .card { border:1px solid #ddd; border-radius:8px; padding:15px; margin-bottom:12px; cursor:pointer; }
+    .card:hover { background:#f0f4ff; }
+    .details { display:none; margin-top:10px; border-top:1px solid #eee; padding-top:10px; }
+    .section-title { font-weight:bold; color:#0b3d91; margin-top:10px; }
+    .button { display:inline-block; margin-top:10px; padding:8px 12px; background:#0b3d91; color:white; border-radius:6px; font-size:13px; cursor:pointer; }
+    .button.disabled { background:gray; cursor:not-allowed; }
+    .login-box { text-align:right; margin-bottom:10px; }
   </style>
 </head>
 <body>
@@ -109,128 +33,113 @@
 
 <div class="container">
 
+  <div class="login-box">
+    <div id="g_id_onload"
+         data-client_id="YOUR_GOOGLE_CLIENT_ID"
+         data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin"></div>
+    <div id="userInfo"></div>
+  </div>
+
   <div class="notice">
-    This system provides access to limited public service records. Some information may require formal request for access.
+    You must be signed in with a verified account to request documents.
   </div>
 
   <div class="search-box">
     <input type="text" id="searchInput" placeholder="Search officer name...">
     <select id="stateFilter">
       <option value="">All States</option>
-      <option value="NSW">New South Wales</option>
-      <option value="VIC">Victoria</option>
-      <option value="QLD">Queensland</option>
       <option value="SA">South Australia</option>
-      <option value="WA">Western Australia</option>
-      <option value="TAS">Tasmania</option>
-      <option value="NT">Northern Territory</option>
-      <option value="ACT">Australian Capital Territory</option>
+      <option value="NSW">New South Wales</option>
     </select>
   </div>
 
   <div id="results"></div>
 </div>
 
-<footer>
-  © 2026 Public Service Information System
-</footer>
-
 <script>
-  const officers = [
-    {
-      name: "John Smith",
-      state: "SA",
-      rank: "Sergeant",
-      station: "Adelaide Central",
-      id: "SA1234",
-      service: "12 years",
-      case: {
-        ref: "SA-2023-445",
-        court: "Adelaide Magistrates Court",
-        status: "Closed",
-        outcome: "Resolved"
-      }
-    },
-    {
-      name: "Emily Johnson",
-      state: "NSW",
-      rank: "Constable",
-      station: "Sydney CBD",
-      id: "NSW5678",
-      service: "5 years",
-      case: {
-        ref: "NSW-2024-882",
-        court: "Sydney District Court",
-        status: "Under Review",
-        outcome: "Pending"
-      }
+let loggedInUser = null;
+
+function handleCredentialResponse(response) {
+  const data = parseJwt(response.credential);
+  loggedInUser = data;
+  document.getElementById("userInfo").innerHTML = "Logged in as: " + data.email;
+}
+
+function parseJwt(token) {
+  return JSON.parse(atob(token.split('.')[1]));
+}
+
+const officers = [
+  {
+    name: "John Smith",
+    state: "SA",
+    rank: "Sergeant",
+    station: "Adelaide Central",
+    id: "SA1234",
+    service: "12 years",
+    case: {
+      ref: "SA-2023-445",
+      court: "Adelaide Magistrates Court",
+      status: "Closed",
+      outcome: "Resolved"
     }
-  ];
-
-  const searchInput = document.getElementById("searchInput");
-  const stateFilter = document.getElementById("stateFilter");
-  const resultsDiv = document.getElementById("results");
-
-  function displayOfficers(list) {
-    resultsDiv.innerHTML = "";
-
-    if (list.length === 0) {
-      resultsDiv.innerHTML = "<p>No results found.</p>";
-      return;
-    }
-
-    list.forEach((officer, index) => {
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <strong>${officer.name}</strong> (${officer.state})
-        <div class="details" id="details-${index}">
-
-          <div class="section-title">Officer Information</div>
-          Rank: ${officer.rank}<br>
-          Station: ${officer.station}<br>
-          Officer ID: ${officer.id}<br>
-          Years of Service: ${officer.service}
-
-          <div class="section-title">Case Information</div>
-          Case Ref: ${officer.case.ref}<br>
-          Court: ${officer.case.court}<br>
-          Status: ${officer.case.status}<br>
-          Outcome: ${officer.case.outcome}
-
-          <div class="section-title">Documents</div>
-          <a href="#" class="button">Request Documents</a>
-
-        </div>
-      `;
-
-      card.addEventListener("click", () => {
-        const details = document.getElementById(`details-${index}`);
-        details.style.display = details.style.display === "block" ? "none" : "block";
-      });
-
-      resultsDiv.appendChild(card);
-    });
   }
+];
 
-  function filterOfficers() {
-    const search = searchInput.value.toLowerCase();
-    const state = stateFilter.value;
+const resultsDiv = document.getElementById("results");
 
-    const filtered = officers.filter(o => {
-      const matchesName = o.name.toLowerCase().includes(search);
-      const matchesState = state === "" || o.state === state;
-      return matchesName && matchesState;
+function displayOfficers(list) {
+  resultsDiv.innerHTML = "";
+
+  list.forEach((officer, index) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const buttonClass = loggedInUser ? "button" : "button disabled";
+
+    card.innerHTML = `
+      <strong>${officer.name}</strong> (${officer.state})
+      <div class="details" id="details-${index}">
+
+        <div class="section-title">Officer Information</div>
+        Rank: ${officer.rank}<br>
+        Station: ${officer.station}<br>
+        Officer ID: ${officer.id}<br>
+        Years of Service: ${officer.service}
+
+        <div class="section-title">Case Information</div>
+        Case Ref: ${officer.case.ref}<br>
+        Court: ${officer.case.court}<br>
+        Status: ${officer.case.status}<br>
+        Outcome: ${officer.case.outcome}
+
+        <div class="section-title">Documents</div>
+        <div class="${buttonClass}" onclick="requestDocs('${officer.name}')">Request Documents</div>
+
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      const details = document.getElementById(`details-${index}`);
+      details.style.display = details.style.display === "block" ? "none" : "block";
     });
 
-    displayOfficers(filtered);
+    resultsDiv.appendChild(card);
+  });
+}
+
+function requestDocs(name) {
+  if (!loggedInUser) {
+    alert("You must log in with Google to request documents.");
+    return;
   }
 
-  searchInput.addEventListener("input", filterOfficers);
-  stateFilter.addEventListener("change", filterOfficers);
+  alert(`Request sent for ${name}.\nUser Email: ${loggedInUser.email}\n(Connect backend to send email)`);
+}
 
-  displayOfficers(officers);
+displayOfficers(officers);
 </script>
 
 </body>
