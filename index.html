@@ -7,136 +7,156 @@
 
 <style>
 body { margin:0; font-family:"Segoe UI",sans-serif; background:#f5f7fa; }
-header { background:#0b3d91; color:white; padding:18px; display:flex; justify-content:space-between; align-items:center; }
-header span { font-size:18px; font-weight:600; }
+header { background:#0b3d91; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; }
+.nav { display:flex; gap:20px; }
+.nav a { color:white; text-decoration:none; font-size:14px; }
+.auth-top { display:flex; gap:8px; }
+.auth-top input { padding:6px; border-radius:4px; border:none; }
+.auth-top .button { padding:6px 10px; font-size:12px; }
 .container { max-width:1000px; margin:25px auto; padding:20px; background:white; border-radius:10px; }
-.auth-box { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px; }
-input, select { padding:10px; border-radius:6px; border:1px solid #ccc; }
-.button { background:#0b3d91; color:white; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:13px; }
-.button:hover { background:#092f6b; }
-.logout { background:#c62828; }
-.dashboard { background:#eef3ff; padding:10px; border-radius:6px; margin-bottom:15px; display:none; }
+.crest { text-align:center; margin-bottom:15px; }
+.crest img { width:80px; }
+.dashboard { background:#eef3ff; padding:12px; border-radius:6px; margin-bottom:15px; display:none; }
+.badge { background:green; color:white; padding:3px 6px; border-radius:4px; font-size:11px; margin-left:6px; }
 .card { border:1px solid #ddd; border-radius:8px; padding:15px; margin-bottom:12px; cursor:pointer; }
 .card:hover { background:#f0f4ff; }
 .details { display:none; margin-top:10px; border-top:1px solid #eee; padding-top:10px; }
 .section-title { font-weight:bold; color:#0b3d91; margin-top:10px; }
+.button { background:#0b3d91; color:white; border-radius:6px; cursor:pointer; }
 .disabled { background:gray !important; cursor:not-allowed; }
+.timeline { border-left:3px solid #0b3d91; padding-left:10px; margin-top:10px; }
+.timeline div { margin-bottom:8px; font-size:13px; }
+.history { font-size:13px; margin-top:10px; }
 </style>
 </head>
 <body>
 
 <header>
-  <span>Public Service Officer Portal</span>
-  <div id="userHeader"></div>
+  <div class="nav">
+    <a href="#">home.gov.au</a>
+    <a href="#">services.gov.au</a>
+    <a href="#">records.gov.au</a>
+  </div>
+
+  <div class="auth-top">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <div class="button" onclick="register()">Create</div>
+    <div class="button" onclick="login()">Login</div>
+    <div class="button" onclick="logout()">Logout</div>
+  </div>
 </header>
 
 <div class="container">
 
-<div class="auth-box" id="authBox">
-  <input type="email" id="email" placeholder="Government Email">
-  <input type="password" id="password" placeholder="Password">
-  <div class="button" onclick="register()">Register</div>
-  <div class="button" onclick="login()">Login</div>
+<div class="crest">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Coat_of_Arms_of_Australia.svg/512px-Coat_of_Arms_of_Australia.svg.png">
+  <div><strong>Public Service Records System</strong></div>
 </div>
 
 <div class="dashboard" id="dashboard">
   <strong>Account Dashboard</strong><br>
-  Logged in as: <span id="userEmail"></span><br>
-  Access Level: Public User<br>
-  <div class="button logout" onclick="logout()">Logout</div>
+  Email: <span id="userEmail"></span> <span class="badge">Verified User</span><br>
+  Access Level: Public Records Access<br>
+
+  <div class="history">
+    <strong>Request History:</strong>
+    <div id="historyList"></div>
+  </div>
 </div>
 
-<div class="search-box">
-  <input type="text" id="searchInput" placeholder="Search officer name...">
-</div>
+<input type="text" id="searchInput" placeholder="Search officer name...">
 
 <div id="results"></div>
 </div>
 
 <script>
-let currentUser = null;
+let currentUser=null;
+let historyLog=[];
 
 function register(){
-  const email = emailEl.value;
-  const pass = passwordEl.value;
-  if(!email||!pass) return alert("Fill all fields");
-  localStorage.setItem(email, pass);
-  alert("Account created");
+ const e=email.value,p=password.value;
+ if(!e||!p) return alert("Fill fields");
+ localStorage.setItem(e,p);
+ alert("Account created");
 }
 
 function login(){
-  const email = emailEl.value;
-  const pass = passwordEl.value;
-  if(localStorage.getItem(email)===pass){
-    currentUser={email};
-    updateUI();
-  } else alert("Invalid login");
+ const e=email.value,p=password.value;
+ if(localStorage.getItem(e)===p){
+  currentUser={email:e};
+  updateUI();
+ } else alert("Invalid");
 }
 
-function logout(){
-  currentUser=null;
-  updateUI();
-}
+function logout(){ currentUser=null; updateUI(); }
 
 function updateUI(){
-  const dash = document.getElementById("dashboard");
-  const header = document.getElementById("userHeader");
-
-  if(currentUser){
-    dash.style.display="block";
-    document.getElementById("userEmail").innerText=currentUser.email;
-    header.innerHTML = currentUser.email;
-  } else {
-    dash.style.display="none";
-    header.innerHTML = "Not Logged In";
-  }
-  displayOfficers(officers);
+ const dash=document.getElementById("dashboard");
+ if(currentUser){
+  dash.style.display="block";
+  userEmail.innerText=currentUser.email;
+ } else dash.style.display="none";
+ displayOfficers(officers);
 }
 
-const emailEl=document.getElementById("email");
-const passwordEl=document.getElementById("password");
-
 const officers=[{
- name:"John Smith", state:"SA", rank:"Sergeant", station:"Adelaide Central", id:"SA1234", service:"12 years",
- case:{ref:"SA-2023-445", court:"Adelaide Magistrates Court", status:"Closed", outcome:"Resolved"}
+ name:"John Smith",state:"SA",rank:"Sergeant",station:"Adelaide Central",id:"SA1234",
+ case:{ref:"SA-2023-445",court:"Adelaide Magistrates Court",status:"Closed"},
+ timeline:["Incident Report Filed","Court Hearing","Case Closed"]
 }];
 
-const resultsDiv=document.getElementById("results");
-
 function displayOfficers(list){
- resultsDiv.innerHTML="";
+ results.innerHTML="";
  list.forEach((o,i)=>{
-   const btnClass=currentUser?"button":"button disabled";
-   const card=document.createElement("div");
-   card.className="card";
-   card.innerHTML=`
-   <strong>${o.name}</strong>
-   <div class="details" id="d${i}">
-     <div class="section-title">Officer Info</div>
-     ${o.rank}<br>${o.station}<br>ID: ${o.id}<br>
-     <div class="section-title">Case</div>
-     Ref: ${o.case.ref}<br>${o.case.court}<br>${o.case.status}<br>
-     <div class="section-title">Documents</div>
-     <div class="${btnClass}" onclick="requestDocs('${o.name}')">Request Documents</div>
-   </div>`;
+  const btn=currentUser?"button":"button disabled";
+  const card=document.createElement("div");
+  card.className="card";
+  card.innerHTML=`
+  <strong>${o.name}</strong>
+  <div class="details" id="d${i}">
+    <div class="section-title">Officer Info</div>
+    ${o.rank}<br>${o.station}<br>ID:${o.id}
 
-   card.onclick=()=>{
-     const d=document.getElementById("d"+i);
-     d.style.display=d.style.display==="block"?"none":"block";
-   };
+    <div class="section-title">Case</div>
+    ${o.case.ref}<br>${o.case.court}<br>${o.case.status}
 
-   resultsDiv.appendChild(card);
+    <div class="section-title">Timeline</div>
+    <div class="timeline">${o.timeline.map(t=>`<div>• ${t}</div>`).join("")}</div>
+
+    <div class="section-title">Documents</div>
+    <div class="${btn}" onclick="requestDocs('${o.name}')">Request Documents</div>
+  </div>`;
+
+  card.onclick=()=>{
+    const d=document.getElementById("d"+i);
+    d.style.display=d.style.display==="block"?"none":"block";
+  };
+
+  results.appendChild(card);
  });
 }
 
 function requestDocs(name){
  if(!currentUser) return alert("Login required");
 
- const subject = encodeURIComponent("Document Request: "+name);
- const body = encodeURIComponent("Officer: "+name+"\nUser: "+currentUser.email);
+ historyLog.push(name);
+ updateHistory();
 
- window.location.href = `mailto:australiapsc@gmail.com?subject=${subject}&body=${body}`;
+ const subject=encodeURIComponent("Request: "+name);
+ const body=encodeURIComponent("Officer:"+name+"\nUser:"+currentUser.email);
+ window.location.href=`mailto:australiapsc@gmail.com?subject=${subject}&body=${body}`;
 }
+
+function updateHistory(){
+ const list=document.getElementById("historyList");
+ list.innerHTML=historyLog.map(h=>"• "+h).join("<br>");
+}
+
+searchInput.oninput=()=>{
+ const val=searchInput.value.toLowerCase();
+ displayOfficers(officers.filter(o=>o.name.toLowerCase().includes(val)));
+};
 
 updateUI();
 </script>
