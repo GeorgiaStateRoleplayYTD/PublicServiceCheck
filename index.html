@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Public Service Officer Lookup</title>
 
-  <!-- Google Sign-In -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
   <style>
     body { margin:0; font-family:"Segoe UI",sans-serif; background:#f5f7fa; }
     header { background:#0b3d91; color:white; padding:20px; text-align:center; font-size:22px; }
@@ -22,7 +19,9 @@
     .section-title { font-weight:bold; color:#0b3d91; margin-top:10px; }
     .button { display:inline-block; margin-top:10px; padding:8px 12px; background:#0b3d91; color:white; border-radius:6px; font-size:13px; cursor:pointer; }
     .button.disabled { background:gray; cursor:not-allowed; }
-    .login-box { text-align:right; margin-bottom:10px; }
+    .auth-box { display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; }
+    .auth-box input { flex:1; }
+    .auth-status { font-size:13px; margin-top:5px; }
   </style>
 </head>
 <body>
@@ -33,17 +32,16 @@
 
 <div class="container">
 
-  <div class="login-box">
-    <div id="g_id_onload"
-         data-client_id="YOUR_GOOGLE_CLIENT_ID"
-         data-callback="handleCredentialResponse">
-    </div>
-    <div class="g_id_signin"></div>
-    <div id="userInfo"></div>
+  <div class="auth-box">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <div class="button" onclick="register()">Create Account</div>
+    <div class="button" onclick="login()">Login</div>
   </div>
+  <div id="authStatus" class="auth-status"></div>
 
   <div class="notice">
-    You must be signed in with a verified account to request documents.
+    You must be logged in to request documents.
   </div>
 
   <div class="search-box">
@@ -59,16 +57,34 @@
 </div>
 
 <script>
-let loggedInUser = null;
+let currentUser = null;
 
-function handleCredentialResponse(response) {
-  const data = parseJwt(response.credential);
-  loggedInUser = data;
-  document.getElementById("userInfo").innerHTML = "Logged in as: " + data.email;
+function register() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if (!email || !password) {
+    alert("Enter email and password");
+    return;
+  }
+
+  localStorage.setItem(email, password);
+  document.getElementById("authStatus").innerText = "Account created. You can now login.";
 }
 
-function parseJwt(token) {
-  return JSON.parse(atob(token.split('.')[1]));
+function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const stored = localStorage.getItem(email);
+
+  if (stored === password) {
+    currentUser = { email };
+    document.getElementById("authStatus").innerText = "Logged in as: " + email;
+    displayOfficers(officers);
+  } else {
+    alert("Invalid login");
+  }
 }
 
 const officers = [
@@ -97,7 +113,7 @@ function displayOfficers(list) {
     const card = document.createElement("div");
     card.className = "card";
 
-    const buttonClass = loggedInUser ? "button" : "button disabled";
+    const buttonClass = currentUser ? "button" : "button disabled";
 
     card.innerHTML = `
       <strong>${officer.name}</strong> (${officer.state})
@@ -131,12 +147,12 @@ function displayOfficers(list) {
 }
 
 function requestDocs(name) {
-  if (!loggedInUser) {
-    alert("You must log in with Google to request documents.");
+  if (!currentUser) {
+    alert("You must log in to request documents.");
     return;
   }
 
-  alert(`Request sent for ${name}.\nUser Email: ${loggedInUser.email}\n(Connect backend to send email)`);
+  alert(`Request sent for ${name}.\nUser Email: ${currentUser.email}\n(Backend needed to send email)`);
 }
 
 displayOfficers(officers);
