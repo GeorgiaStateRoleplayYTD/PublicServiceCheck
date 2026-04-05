@@ -19,11 +19,10 @@
       text-align: center;
       font-size: 22px;
       font-weight: 600;
-      letter-spacing: 0.5px;
     }
 
     .container {
-      max-width: 900px;
+      max-width: 950px;
       margin: 30px auto;
       padding: 20px;
       background: white;
@@ -53,10 +52,7 @@
       font-size: 15px;
     }
 
-    input {
-      flex: 1;
-      min-width: 200px;
-    }
+    input { flex: 1; }
 
     .card {
       border: 1px solid #ddd;
@@ -67,13 +63,7 @@
       transition: 0.2s;
     }
 
-    .card:hover {
-      background: #f0f4ff;
-    }
-
-    .card strong {
-      font-size: 16px;
-    }
+    .card:hover { background: #f0f4ff; }
 
     .details {
       display: none;
@@ -83,6 +73,25 @@
       border-top: 1px solid #eee;
       padding-top: 10px;
     }
+
+    .section-title {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #0b3d91;
+    }
+
+    .button {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #0b3d91;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .button:hover { background: #092f6b; }
 
     footer {
       text-align: center;
@@ -101,7 +110,7 @@
 <div class="container">
 
   <div class="notice">
-    This system is for informational purposes only. Data displayed may be limited to publicly available records.
+    This system provides access to limited public service records. Some information may require formal request for access.
   </div>
 
   <div class="search-box">
@@ -133,21 +142,28 @@
       state: "SA",
       rank: "Sergeant",
       station: "Adelaide Central",
-      id: "SA1234"
+      id: "SA1234",
+      service: "12 years",
+      case: {
+        ref: "SA-2023-445",
+        court: "Adelaide Magistrates Court",
+        status: "Closed",
+        outcome: "Resolved"
+      }
     },
     {
       name: "Emily Johnson",
       state: "NSW",
       rank: "Constable",
       station: "Sydney CBD",
-      id: "NSW5678"
-    },
-    {
-      name: "Michael Brown",
-      state: "VIC",
-      rank: "Senior Constable",
-      station: "Melbourne West",
-      id: "VIC9101"
+      id: "NSW5678",
+      service: "5 years",
+      case: {
+        ref: "NSW-2024-882",
+        court: "Sydney District Court",
+        status: "Under Review",
+        outcome: "Pending"
+      }
     }
   ];
 
@@ -170,9 +186,22 @@
       card.innerHTML = `
         <strong>${officer.name}</strong> (${officer.state})
         <div class="details" id="details-${index}">
-          <strong>Rank:</strong> ${officer.rank}<br>
-          <strong>Station:</strong> ${officer.station}<br>
-          <strong>Officer ID:</strong> ${officer.id}
+
+          <div class="section-title">Officer Information</div>
+          Rank: ${officer.rank}<br>
+          Station: ${officer.station}<br>
+          Officer ID: ${officer.id}<br>
+          Years of Service: ${officer.service}
+
+          <div class="section-title">Case Information</div>
+          Case Ref: ${officer.case.ref}<br>
+          Court: ${officer.case.court}<br>
+          Status: ${officer.case.status}<br>
+          Outcome: ${officer.case.outcome}
+
+          <div class="section-title">Documents</div>
+          <a href="#" class="button">Request Documents</a>
+
         </div>
       `;
 
